@@ -1,0 +1,20 @@
+groups:
+  - name: devsecops-alerts
+    rules:
+      - alert: HighHTTP5xxErrors
+        expr: sum(rate(flask_http_requests_total{status=~"5.."}[1m])) > 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP 5xx errors detected"
+          description: "Application is generating HTTP 5xx errors."
+
+      - alert: ApplicationDown
+        expr: up{job="flask-app"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Flask application is down"
+          description: "Prometheus cannot scrape the Flask application."

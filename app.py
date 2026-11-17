@@ -1,7 +1,16 @@
-from flask import Flask, jsonify
+
+
+from flask import Flask, jsonify, Response, request, g
 import socket
 import os
 import time
+
+from prometheus_client import (
+    Counter,
+    Histogram,
+    generate_latest,
+    CONTENT_TYPE_LATEST
+)
 
 app = Flask(__name__)
 
@@ -11,6 +20,49 @@ app_state = {
     "failure_mode": False,
     "started_at": time.strftime("%Y-%m-%d %H:%M:%S")
 }
+
+# Total HTTP requests by method, endpoint and status code
+HTTP_REQUESTS = Counter(
+    "flask_http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status"]
+)
+
+# HTTP request duration in seconds
+HTTP_REQUEST_DURATION = Histogram(
+    "flask_http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "endpoint"]
+)
+
+
+@app.before_request
+def start_timer():
+    g.start_time = time.time()
+
+
+@app.after_request
+def record_metrics(response):
+    # Do not count the metrics endpoint itself
+    if request.endpoint != "metrics":
+        endpoint = request.endpoint or "unknown"
+        method = request.method
+        status = str(response.status_code)
+
+        HTTP_REQUESTS.labels(
+            method=method,
+            endpoint=endpoint,
+            status=status
+        ).inc()
+
+        duration = time.time() - getattr(g, "start_time", time.time())
+
+        HTTP_REQUEST_DURATION.labels(
+            method=method,
+            endpoint=endpoint
+        ).observe(duration)
+
+    return response
 
 
 @app.route("/")
@@ -48,7 +100,6 @@ def status():
     }), 200
 
 
-# Controlled failure simulation for project demonstration
 @app.route("/simulate-failure")
 def simulate_failure():
     app_state["failure_mode"] = True
@@ -60,7 +111,6 @@ def simulate_failure():
     }), 200
 
 
-# Recover application manually (useful for testing)
 @app.route("/recover")
 def recover():
     app_state["failure_mode"] = False
@@ -70,6 +120,15 @@ def recover():
         "message": "Application recovered successfully",
         "status": "healthy"
     }), 200
+
+
+# Prometheus metrics endpoint
+@app.route("/metrics")
+def metrics():
+    return Response(
+        generate_latest(),
+        mimetype=CONTENT_TYPE_LATEST
+    )
 
 
 if __name__ == "__main__":
