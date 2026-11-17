@@ -1,0 +1,24 @@
+Experiment: Docker Container Self-Healing
+
+Date: 17 November 2026
+
+Application: DevSecOps Flask Application
+Container: devsecops-container
+Monitoring Tool: Python Self-Healing Controller
+
+Failure Type: Docker Container Stopped
+
+Failure Detection: 12:50:34
+Recovery Initiated: 12:50:34
+Recovery Verified: 12:50:44
+
+Recovery Time: Approximately 10 seconds
+
+Final Status: SUCCESS
+Application Health: HTTP 200 OK
+
+Conclusion:
+The Python-based self-healing controller
+successfully detected the stopped Docker
+container and automatically restarted it.
+The application returned to a healthy state.
