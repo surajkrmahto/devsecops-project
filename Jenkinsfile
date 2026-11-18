@@ -65,7 +65,7 @@ pipeline {
                       --name devsecops-container \
                       --restart unless-stopped \
                       --network monitoring-network \
-                      -p 5000:5000 \
+                      -p 127.0.0.1:5000:5000 \
                       devsecops-app:latest
                 '''
             }
