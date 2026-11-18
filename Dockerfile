@@ -1,6 +1,11 @@
 # Use Python base image
 FROM python:3.12-slim
 
+# Update OS packages to include available security fixes
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
