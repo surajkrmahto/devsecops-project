@@ -25,8 +25,8 @@ pipeline {
                     withSonarQubeEnv('SonarQube-Local') {
                         sh """
                             "${scannerHome}/bin/sonar-scanner" \
-                              -Dsonar.projectKey=devsecops-flask-app \
-                              -Dsonar.projectName="DevSecOps Flask App" \
+                               -Dsonar.projectKey=DevSecOps-Flask-App \
+                               -Dsonar.projectName="DevSecOps Flask App" \
                               -Dsonar.sources=. \
                               -Dsonar.exclusions="**/venv/**,**/__pycache__/**"
                         """
