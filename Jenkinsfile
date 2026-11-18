@@ -17,6 +17,24 @@ pipeline {
             }
         }
 
+        stage('SonarQube Code Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube-Local') {
+                        sh """
+                            "${scannerHome}/bin/sonar-scanner" \
+                              -Dsonar.projectKey=devsecops-flask-app \
+                              -Dsonar.projectName="DevSecOps Flask App" \
+                              -Dsonar.sources=. \
+                              -Dsonar.exclusions="**/venv/**,**/__pycache__/**"
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t devsecops-app:latest .'
